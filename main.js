@@ -1,6 +1,7 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow} = require('electron')
 const path = require('path')
+const fs = require('fs')
 
 function createWindow () {
   // Create the browser window.
@@ -8,7 +9,9 @@ function createWindow () {
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: true,
+      webviewTag: true,
     }
   })
 
@@ -17,6 +20,18 @@ function createWindow () {
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
+mainWindow.webContents.on('did-finish-load', () => {
+  // Use default printing options
+  mainWindow.webContents.printToPDF({}).then(data => {
+    fs.writeFile('output.pdf', data, (error) => {
+      if (error) throw error
+      console.log('Write PDF successfully.')
+    })
+  }).catch(error => {
+    console.log(error)
+  })
+})
+
 }
 
 // This method will be called when Electron has finished
